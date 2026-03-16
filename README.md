@@ -37,7 +37,8 @@ MIT - Feel free to play with it, change it, and make it even sillier!
 Made by TheRealla family 🎸🦕
 
 
-Updated README with fun kid version by Laila & Lilibet
+
+"Updated README with fun kid version by Laila Star & Lilibet Diana"
 
 
 

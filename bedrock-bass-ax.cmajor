@@ -1,0 +1,65 @@
+// --- Bedrock Bass-Ax DSP Engine ---
+// Flintstones Rock Instrument for kids! Yabba Dabba Doo + Dino Roar
+// Knobs created by Laila & Lilibet Diana
+
+// Controls (these become the 3 big colorful knobs in Amorph)
+float controlRoar = 0.5f;      // Roar Knob - Dino Growl
+float controlYabba = 0.3f;     // Yabba Knob - Fred Crunch
+float controlRockClub = 0.6f;  // Rock Club Knob - Guitar Bite
+
+// Objects
+Oscillator oscSaw;
+Oscillator oscSquare;
+LowPassFilter lowPassFilter;
+HighShelfFilter highShelf;
+DelayLine delayLine(2000);
+ADSR envelope;
+
+// Init
+void init() {
+    oscSaw.setWaveform("saw");
+    oscSquare.setWaveform("square");
+    
+    envelope.setAttack(0.002f);   // super fast smash
+    envelope.setDecay(0.15f);
+    envelope.setSustain(0.0f);
+    envelope.setRelease(0.08f);
+    
+    delayLine.setDelayTime(0.05f); // 50ms cave echo
+}
+
+// Main process
+float process(float gate, float noteFrequency) {
+    // Set pitch
+    oscSaw.setFrequency(noteFrequency);
+    oscSquare.setFrequency(noteFrequency);
+    
+    // 1. Cartoon Roar oscillators
+    float signal = (oscSaw.next() * 0.6f) + (oscSquare.next() * 0.4f);
+    
+    // 2. Roar Knob - Dino Growl
+    // "Turns the sound from a mumble into a YIP-YIP-YIP! dinosaur bark."
+    float roarCutoff = 100.0f + (controlRoar * 2000.0f);
+    float roarRes = 0.7f + (controlRoar * 0.25f);
+    signal = lowPassFilter.process(signal, roarCutoff, roarRes);
+    
+    // 3. Yabba Knob - Fred Crunch
+    // "Adds the grit. Crank it up to make the rocks crumble!"
+    float drive = 1.0f + (controlYabba * 5.0f);
+    signal = tanhf(signal * drive);
+    
+    // 4. Rock Club Knob - Guitar Bite
+    // "Makes it sound less like a synth and more like a caveman lead guitar."
+    signal = highShelf.process(signal, 3000.0f, controlRockClub * 12.0f);
+    
+    // 5. Envelope - Yabba Dabba smash!
+    float env = envelope.process(gate);
+    signal *= env;
+    
+    // 6. Cave Echo
+    float echo = delayLine.read();
+    signal = (signal * 0.8f) + (echo * 0.2f);
+    delayLine.write(signal);
+    
+    return signal;
+}
